@@ -4,6 +4,17 @@
     ViewData["Title"] = "View Page";
 }
 <h1>@ViewData["Title"]</h1>
+<div class="row m-1">
+    <form class="col-12" method="post">
+        <div class="form-row align-items-end">
+            <div class="form-group col-auto">
+                <label for="searchField">Search</label>
+                <input class="form-control" type="number" id="searchField" name="id" placeholder="id or part of id">
+            </div>
+            <input type="submit" class="btn btn-success" value="Submit">
+        </div>
+    </form>
+</div>
 <div class="row m-3">
     <div class="table-responsive">
         <table class="table table-sm table-bordered">
