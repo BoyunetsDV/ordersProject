@@ -10,8 +10,8 @@ using ordersProject.Context;
 namespace ordersProject.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20190709092312_Initial")]
-    partial class Initial
+    [Migration("20190709162022_initial")]
+    partial class initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

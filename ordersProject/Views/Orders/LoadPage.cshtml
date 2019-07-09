@@ -16,60 +16,81 @@
             </div>
         </div>
     </form>
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <td scope="col">oxid</td>
-                <td scope="col">orderdate</td>
-                <td scope="col">billingaddress</td>
-                <td scope="col">payments</td>
-                <td scope="col">articles</td>
-                <td scope="col">invoice number</td>
-                <td scope="col">status</td>
-            </tr>
-        </thead>
-        @foreach (var order in Model)
-        {
-            <tr>
-                <td>@order.Oxid</td>
-                <td>@order.OrderDate.ToUniversalTime()</td>
-                <td>
-                    @order.BillingAddress.BillEmail<br>
-                    @order.BillingAddress.BillFName<br>
-                    @order.BillingAddress.BillStreet<br>
-                    @order.BillingAddress.BillStreetNr<br>
-                    @order.BillingAddress.BillCity<br>
-                    Country: @order.BillingAddress.Country.Geo
-                </td>
-                <td>
-                    @foreach (var payment in order.Payments)
-                    {
-                        <span>Payment:</span><br>
-                        <ul>
-                            <li>@payment.MethodName</li>
-                            <li>@payment.Amount</li>
-                        </ul>
-                    }
-                </td>
-                <td>
-                    @foreach (var orderArticle in order.Articles)
-                    {
-                        <span>OrderArticle:</span><br>
-                        <ul>
-                            <li>@orderArticle.ArtNum</li>
-                            <li>@orderArticle.Title</li>
-                            <li>@orderArticle.Amount</li>
-                            <li>@orderArticle.BrutPrice</li>
-                        </ul>
-                    }
-                </td>
-                <td>
-                    @order.InvoiceNumber
-                </td>
-                <td>
-                    @order.Status
-                </td>
-            </tr>
-        }
-    </table>
+    <form class="col-12" method="post">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <td scope="col">oxid</td>
+                    <td scope="col">orderdate</td>
+                    <td scope="col">billingaddress</td>
+                    <td scope="col">payments</td>
+                    <td scope="col">articles</td>
+                    <td scope="col">invoice number</td>
+                    <td scope="col">status</td>
+                </tr>
+            </thead>
+            @{
+                int i = 0;
+                List<string> options = new List<string>() { "Processed", "Unprocessed", "Cancelled" };
+            }
+            @foreach (var order in Model)
+            {
+                <tr>
+                    <input type="number" value="@order.Id" name="objectsToUpdate[@i].Id" hidden readonly>
+                    <td>@order.Oxid</td>
+                    <td>@order.OrderDate.ToUniversalTime()</td>
+                    <td>
+                        @order.BillingAddress.BillEmail<br>
+                        @order.BillingAddress.BillFName<br>
+                        @order.BillingAddress.BillStreet<br>
+                        @order.BillingAddress.BillStreetNr<br>
+                        @order.BillingAddress.BillCity<br>
+                        Country: @order.BillingAddress.Country.Geo
+                    </td>
+                    <td>
+                        @foreach (var payment in order.Payments)
+                        {
+                            <span>Payment:</span><br>
+                            <ul>
+                                <li>@payment.MethodName</li>
+                                <li>@payment.Amount</li>
+                            </ul>
+                        }
+                    </td>
+                    <td>
+                        @foreach (var orderArticle in order.Articles)
+                        {
+                            <span>OrderArticle:</span><br>
+                            <ul>
+                                <li>@orderArticle.ArtNum</li>
+                                <li>@orderArticle.Title</li>
+                                <li>@orderArticle.Amount</li>
+                                <li>@orderArticle.BrutPrice</li>
+                            </ul>
+                        }
+                    </td>
+                    <td>
+                        <input type="text" value="@order.InvoiceNumber" name="objectsToUpdate[@i].InvoiceNumber">
+                    </td>
+                    <td>
+                        <select name="objectsToUpdate[@i].Status" class="form-control">
+                            @foreach (var option in options)
+                            {
+                                @if (option == order.Status)
+                                {
+                                    <option value="@option" selected>@option</option>
+                                }
+                                else
+                                {
+                                    <option value="@option">@option</option>
+                                }
+                            }
+                        </select>
+                    </td>
+                </tr>
+                i++;
+            }
+        </table>
+        <input type="submit" value="Save Changes">
+    </form>
 </div>

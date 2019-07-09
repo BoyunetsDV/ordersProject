@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using System.IO;
 using System.Threading;
 using System.Xml.Linq;
+using System.Diagnostics;
 
 namespace ordersProject.Controllers
 {
@@ -93,37 +94,40 @@ namespace ordersProject.Controllers
             }
         }
 
-        [HttpPatch]
-        public IActionResult UpdateOrders([FromBody]List<UpdateObject> objectsToUpdate)
+        [HttpPost]
+        public IActionResult LoadPage(List<UpdateObject> objectsToUpdate)
         {
             try
             {
-                var ordersNeedToUpdateByStatus = objectsToUpdate.Where(u => u.Type == "Statuses").SelectMany(u => u.KeyValuePairs.Keys).ToList();
-                var ordersNeedToUpdateByInvoiceNumber = objectsToUpdate.Where(u => u.Type == "InvoiceNumber").SelectMany(u => u.KeyValuePairs.Keys).ToList();
-                if (ordersNeedToUpdateByInvoiceNumber.Count != 0 && ordersNeedToUpdateByStatus.Count != 0)
+                var orders = new List<Order>();
+                if (objectsToUpdate.Count != 0)
                     using (ApplicationContext context = new ApplicationContext())
                     {
-                        if (ordersNeedToUpdateByStatus.Count != 0)
+                        var objectIds = objectsToUpdate.Select(o => o.Id).ToList();
+                        var ordersToUpdate = context.Orders.Where(u => objectIds.Contains(u.Id)).ToList();
+                        foreach (var order in ordersToUpdate)
                         {
-                            var ordersToUpdateByStatus = context.Orders.Where(u => ordersNeedToUpdateByStatus.Contains(u.Oxid)).ToList();
-                            foreach (var order in ordersToUpdateByStatus)
-                                order.Status = objectsToUpdate.FirstOrDefault(u => u.Type == "Statuses").KeyValuePairs[order.Oxid];
+                            var updateData = objectsToUpdate.FirstOrDefault(o => o.Id == order.Id);
+                            order.InvoiceNumber = updateData.InvoiceNumber;
+                            order.Status = updateData.Status;
+                        }
 
-                        }
-                        if (ordersNeedToUpdateByInvoiceNumber.Count != 0)
-                        {
-                            var ordersToUpdateByStatus = context.Orders.Where(u => ordersNeedToUpdateByInvoiceNumber.Contains(u.Oxid)).ToList();
-                            foreach (var order in ordersToUpdateByStatus)
-                                order.InvoiceNumber = int.Parse(objectsToUpdate.FirstOrDefault(u => u.Type == "InvoiceNumber").KeyValuePairs[order.Oxid]);
-                        }
                         context.SaveChanges();
+
+                        orders = context.Orders.Include(o => o.Articles).Include(o => o.BillingAddress).ThenInclude(o => o.Country).Include(o => o.Payments).ToList();
                     }
-                return Ok(objectsToUpdate);
+                return View(orders);
             }
             catch (Exception exp)
             {
                 return BadRequest(exp.Message);
             }
+        }
+
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public IActionResult Error()
+        {
+            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
     }
 }

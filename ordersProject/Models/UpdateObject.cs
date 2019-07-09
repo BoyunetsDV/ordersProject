@@ -7,7 +7,8 @@ namespace ordersProject.Models
 {
     public class UpdateObject
     {
-        public string Type { get; set; }
-        public Dictionary<long,string> KeyValuePairs { get; set; }
+        public long Id { get; set; }
+        public int InvoiceNumber { get; set; }
+        public string Status { get; set; }
     }
 }

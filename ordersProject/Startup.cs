@@ -43,7 +43,7 @@ namespace ordersProject
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/Orders/Error");
             }
 
             app.UseStaticFiles();
