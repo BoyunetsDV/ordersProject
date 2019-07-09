@@ -6,35 +6,40 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ordersProject.Context;
+using Microsoft.AspNetCore.Http;
+using System.IO;
+using System.Threading;
+using System.Xml.Linq;
 
 namespace ordersProject.Controllers
 {
     public class OrdersController : Controller
     {
         [HttpGet]
-        public IEnumerable<Order> ViewPage()
-        {
-            using (ApplicationContext context = new ApplicationContext())
-            {
-                return context.Orders.ToList();
-            }
-        }
-        public IEnumerable<Order> LoadPage()
-        {
-            using (ApplicationContext context = new ApplicationContext())
-            {
-                return context.Orders.ToList();
-            }
-        }
-        [HttpPost]
-        public IActionResult Filter([FromBody]int id)
+        public IActionResult ViewPage()
         {
             try
             {
                 using (ApplicationContext context = new ApplicationContext())
                 {
-                    var list = context.Orders.Where(u => id == u.Oxid).ToList();
-                    return Ok(list);
+                    var orders = context.Orders.Include(o => o.Articles).Include(o => o.BillingAddress).ThenInclude(o => o.Country).Include(o => o.Payments).ToList();
+                    return View(orders);
+                }
+            }
+            catch
+            {
+                return BadRequest();
+            }
+        }
+        [HttpGet]
+        public IActionResult LoadPage()
+        {
+            try
+            {
+                using (ApplicationContext context = new ApplicationContext())
+                {
+                    var orders = context.Orders.Include(o => o.Articles).Include(o => o.BillingAddress).ThenInclude(o => o.Country).Include(o => o.Payments).ToList();
+                    return View(orders);
                 }
             }
             catch
@@ -43,19 +48,46 @@ namespace ordersProject.Controllers
             }
         }
         [HttpPost]
-        public IActionResult AddOrders([FromBody] List<Order> orders)
+        public IActionResult Filter([FromBody]long id)
         {
             try
             {
+                using (ApplicationContext context = new ApplicationContext())
+                {
+                    var orders = context.Orders.Include(o => o.Articles).Include(o => o.BillingAddress).ThenInclude(o => o.Country).Include(o => o.Payments).Where(o => EF.Functions.Like(o.Oxid.ToString(), $"%{id.ToString()}%")).ToList();
+                    return View(orders);
+                }
+            }
+            catch
+            {
+                return BadRequest();
+            }
+        }
+
+        [HttpPost]
+        public IActionResult AddOrders(IFormFile file)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                    return BadRequest("Invalid file.");
+
+                var fileText = new StreamReader(file.OpenReadStream()).ReadToEnd();
+                XDocument document = XDocument.Parse(fileText);
+
+                List<Order> orders = new List<Order>();
+                foreach (var element in document.Element("orders").Elements("order"))
+                    orders.Add(new Order(element));
+
                 using (ApplicationContext context = new ApplicationContext())
                 {
                     foreach (var order in orders)
                         context.Orders.Add(order);
                     context.SaveChanges();
                 }
-                return Ok(orders);
+                return RedirectToAction("LoadPage");
             }
-            catch(Exception exp)
+            catch (Exception exp)
             {
                 return BadRequest(exp.Message);
             }

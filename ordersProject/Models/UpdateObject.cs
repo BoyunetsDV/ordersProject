@@ -8,6 +8,6 @@ namespace ordersProject.Models
     public class UpdateObject
     {
         public string Type { get; set; }
-        public Dictionary<int,string> KeyValuePairs { get; set; }
+        public Dictionary<long,string> KeyValuePairs { get; set; }
     }
 }

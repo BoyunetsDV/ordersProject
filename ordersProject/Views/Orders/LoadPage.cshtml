@@ -1,5 +1,75 @@
-﻿@{
+﻿@using ordersProject.Models;
+@model IEnumerable<Order>
+@{
     ViewData["Title"] = "Load page";
 }
 <h1>@ViewData["Title"]</h1>
-
+<div class="row m-3">
+    <form class="col-12" method="post" enctype="multipart/form-data" asp-controller="Orders" asp-action="AddOrders">
+        <div class="form-row align-items-end">
+            <div class="form-group col-auto">
+                <label for="dialogButton">Upload file:</label>
+                <input class="form-control-file" type="file" name="file" id="dialogButton">
+            </div>
+            <div class="form-group col-auto">
+                <input class="form-control btn btn-success" type="submit" value="Upload file">
+            </div>
+        </div>
+    </form>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td scope="col">oxid</td>
+                <td scope="col">orderdate</td>
+                <td scope="col">billingaddress</td>
+                <td scope="col">payments</td>
+                <td scope="col">articles</td>
+                <td scope="col">invoice number</td>
+                <td scope="col">status</td>
+            </tr>
+        </thead>
+        @foreach (var order in Model)
+        {
+            <tr>
+                <td>@order.Oxid</td>
+                <td>@order.OrderDate.ToUniversalTime()</td>
+                <td>
+                    @order.BillingAddress.BillEmail<br>
+                    @order.BillingAddress.BillFName<br>
+                    @order.BillingAddress.BillStreet<br>
+                    @order.BillingAddress.BillStreetNr<br>
+                    @order.BillingAddress.BillCity<br>
+                    Country: @order.BillingAddress.Country.Geo
+                </td>
+                <td>
+                    @foreach (var payment in order.Payments)
+                    {
+                        <span>Payment:</span><br>
+                        <ul>
+                            <li>@payment.MethodName</li>
+                            <li>@payment.Amount</li>
+                        </ul>
+                    }
+                </td>
+                <td>
+                    @foreach (var orderArticle in order.Articles)
+                    {
+                        <span>OrderArticle:</span><br>
+                        <ul>
+                            <li>@orderArticle.ArtNum</li>
+                            <li>@orderArticle.Title</li>
+                            <li>@orderArticle.Amount</li>
+                            <li>@orderArticle.BrutPrice</li>
+                        </ul>
+                    }
+                </td>
+                <td>
+                    @order.InvoiceNumber
+                </td>
+                <td>
+                    @order.Status
+                </td>
+            </tr>
+        }
+    </table>
+</div>

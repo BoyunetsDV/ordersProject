@@ -10,6 +10,10 @@ namespace ordersProject.Context
     public class ApplicationContext : DbContext
     {
         public DbSet<Order> Orders { get; set; }
+        public DbSet<BillingAddress> BillingAddress { get; set; }
+        public DbSet<Country> Country { get; set; }
+        public DbSet<OrderArticle> OrderArticles { get; set; }
+        public DbSet<Payment> Payment { get; set; }
 
         public ApplicationContext()
         {
