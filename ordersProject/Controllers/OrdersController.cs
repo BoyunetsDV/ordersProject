@@ -48,7 +48,7 @@ namespace ordersProject.Controllers
             }
         }
         [HttpPost]
-        public IActionResult ViewPage(int id)
+        public IActionResult ViewPage(long id)
         {
             try
             {
